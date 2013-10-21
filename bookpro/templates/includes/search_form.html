@@ -1,0 +1,7 @@
+{% load mezzanine_tags i18n future %}
+<div>
+    <form action='{% url "search" %}'>
+		<input placeholder="{% trans "Search" %}" type="text" name="q" value="{{ request.REQUEST.q }}" class="search"/>
+<input type="submit" class="btn" value="搜索"  value="{% trans "Go" %}">
+    </form>
+</div>

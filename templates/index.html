@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+{% load i18n future mezzanine_tags blog_tags keyword_tags disqus_tags staticfiles duoshuo_tags %}
+
+{% block meta_title %}{% trans "Home" %}{% endblock %}
+{% block title %}{% trans "Home" %}{% endblock %}
+
+{% block extra_css %}
+<link href='{% static "css/flexslider.css" %}' type="text/css" rel="stylesheet" />
+{% endblock %}
+{% block extra_js %}
+<script type="text/javascript" src='{% static "js/jquery.flexslider-min.js" %}'></script>
+<script>
+	$(window).load(function() {
+			$('.flexslider').flexslider({
+				animation: "fade",              //Select your animation type (fade/slide)
+                slideshow: true, 
+			    directionNav: true,
+				controlNav: false,               //Create navigation for paging control of each clide? (true/false)
+		        touchSwipe: true,
+		        prevText: "Previous",           //Set the text for the "previous" directionNav item
+                nextText: "Next",
+		        animationLoop: true
+				});
+		});
+</script>
+{% endblock %}
+
+{% block main %}
+<h1>所有文章</h1>
+
+{% if ads_posts %}
+   <div class="flexslider">
+      <ul class="slides">
+    {% for blog_post in ads_posts %}
+         <li>
+{% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
+        <img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 600 300 %}"/>
+{% else %}
+       <img src='{% static "images/banner1.jpg" %}'/>
+{% endif %}
+    <div id="tou" style="width:261px; height:300px;background:rgba(255,255,255,0.6)!important;filter:Alpha(opacity=60);background:#fff; position:absolute; left:20px; top:0; z-index:1;"></div>
+<div style=" position:absolute; width:241px; left:20px; top:0; z-index:2; padding:0 10px; text-align:center;" >
+            <p>&nbsp;</p>
+			<h1 style="font-size:24px; text-align:center;"><a href="{{ blog_post.get_absolute_url }}">{{ blog_post.title }}</a></h1>
+			{{ blog_post.description_from_content|safe }}
+        </div>
+        </li>
+    {% endfor %}
+      </ul>
+  </div>
+  {% endif %}
+
+{% for blog_post in blog_posts.object_list %}
+     <div class="newsContent">
+{% block blog_post_list_post_metainfo %}
+{% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
+{% block blog_post_list_post_featured_image %}
+<div class="bookPic">
+    <a href="{{ blog_post.get_absolute_url }}">
+        <img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 213 133 %}" width='213' height='133' />
+    </a>
+</div>
+{% endblock %}
+{% endif %}
+
+<div class='bookDec'>
+{% editable blog_post.publish_date %}
+{% block blog_post_list_post_title %}
+{% editable blog_post.title %}
+<h3>
+    <a href="{{ blog_post.get_absolute_url }}">{{ blog_post.title }}</a>
+</h3>
+{% endeditable %}
+{% endblock %}
+
+    {% with blog_post.user as author %}
+	<a href="{% url "blog_post_list_author" author %}">{{ author.get_full_name|default:author.username }}</a>
+    {% endwith %}
+    <span>{% blocktrans with sometime=blog_post.publish_date|timesince %}{{ sometime }} ago{% endblocktrans %}</span>
+    {% with blog_post.categories.all as categories %}
+    {% if categories %}
+    {% trans "in" %}
+    {% for category in categories %}
+    <span><a href="{% url "blog_post_list_category" category.slug %}">{{ category }}</a>{% if not forloop.last %}, {% endif %}</span>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+{% endeditable %}
+{% endblock %}
+
+{% block blog_post_list_post_content %}
+{% editable blog_post.content %}
+{{ blog_post.description_from_content|safe }}
+{% endeditable %}
+{% endblock %}
+
+{% block blog_post_list_post_links %}
+       <div>
+    {% keywords_for blog_post as tags %}
+    {% if tags %}
+    {% trans "Tags" %}:
+    {% spaceless %}
+    {% for tag in tags %}
+    <a href="{% url "blog_post_list_tag" tag.slug %}" class="tag">{{ tag }}</a>
+    {% endfor %}
+    {% endspaceless %}
+    <br>
+    {% endif %}
+	
+	<a href="{{ blog_post.get_absolute_url }}#comments">
+		<span class="ds-thread-count" data-thread-key="{% duoshuo_id_for blog_post %}" data-count-type="comments"></span>
+    </a>
+
+		 <span class="see"><a href="{{ blog_post.get_absolute_url }}">查看详情>> </a></span>
+    
+     </div>
+    </div>
+{% endblock %}
+
+</div>
+{% endfor %}
+
+{% pagination_for blog_posts %}
+
+{% if settings.COMMENTS_DISQUS_SHORTNAME %}
+{% include "generic/includes/disqus_counts.html" %}
+{% endif %}
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"{% duoshuo_shortname %}"};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script>
+
+
+{% endblock %}
+
+{% block right_panel %}
+{% include "blog/includes/filter_panel.html" %}
+{% endblock %}

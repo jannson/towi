@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+{% load i18n future mezzanine_tags blog_tags keyword_tags disqus_tags staticfiles duoshuo_tags %}
+
+{% block meta_title %}{% if page %}{{ page.richtextpage.meta_title }}{% else %}{% trans "Blog" %}{% endif %}{% endblock %}
+
+{% block meta_keywords %}{% metablock %}
+{% keywords_for page as keywords %}
+{% for keyword in keywords %}
+    {% if not forloop.first %}, {% endif %}
+    {{ keyword }}
+{% endfor %}
+{% endmetablock %}{% endblock %}
+
+{% block meta_description %}{% metablock %}
+{{ page.description }}
+{% endmetablock %}{% endblock %}
+
+{% block title %}
+{% if page %}
+{% editable page.title %}{{ page.title }}{% endeditable %}
+{% else %}
+{% trans "Blog" %}
+{% endif %}
+{% endblock %}
+
+{% block breadcrumb_menu %}
+{{ block.super }}
+{% if tag or category or year or month or author %}
+<li>{% spaceless %}
+{% if tag %}
+    {% trans "Tag:" %} {{ tag }}
+{% else %}{% if category %}
+    {% trans "Category:" %} {{ category }}
+{% else %}{% if year or month %}
+    {% if month %}{{ month }}, {% endif %}{{ year }}
+{% else %}{% if author %}
+    {% trans "Author:" %} {{ author.get_full_name|default:author.username }}
+{% endif %}{% endif %}{% endif %}{% endif %}
+{% endspaceless %}
+</li>
+{% endif %}
+{% endblock %}
+
+{% block main %}
+
+{% if tag or category or year or month or author %}
+    {% block blog_post_list_filterinfo %}
+    <h2>
+    {% if tag %}
+        {% trans "Viewing posts tagged" %} {{ tag }}
+    {% else %}{% if category %}
+        {{ category }}
+    {% else %}{% if year or month %}
+        {% trans "Viewing posts from" %} {% if month %}{{ month }}, {% endif %}
+        {{ year }}
+    {% else %}{% if author %}
+        {% trans "Viewing posts by" %}
+        {{ author.get_full_name|default:author.username }}
+    {% endif %}{% endif %}{% endif %}{% endif %}
+    {% endblock %}
+    </h2>
+{% else %}
+    {% if page %}
+    {% block blog_post_list_pagecontent %}
+    {% editable page.richtextpage.content %}
+    {{ page.richtextpage.content|richtext_filters|safe }}
+    {% endeditable %}
+    {% endblock %}
+    {% endif %}
+{% endif %}
+
+{% for blog_post in blog_posts.object_list %}
+     <div class="news">
+     <div class="newsContent">
+{% block blog_post_list_post_metainfo %}
+{% editable blog_post.publish_date %}
+       <table width="100%" border="0">
+          <tr>
+              <td width="11%" rowspan="2"><img src='{% static "images/27 (20).gif" %}' /></td>
+    {% with blog_post.user as author %}
+	<td width="71%"><span class="author"><a href="{% url "blog_post_list_author" author %}">{{ author.get_full_name|default:author.username }}</a></span>
+    {% endwith %}
+            发表了日志：</td>
+            <td width="18%">&nbsp;</td>
+          </tr>
+          <tr>
+			  <td class="display">
+{% block blog_post_list_post_title %}
+{% editable blog_post.title %}
+<h2>
+    <a href="{{ blog_post.get_absolute_url }}">{{ blog_post.title }}</a>
+</h2>
+{% endeditable %}
+{% endblock %}
+			  </td>
+            <td class="time">
+    {% with blog_post.categories.all as categories %}
+    {% if categories %}
+    {% trans "in" %}
+    {% for category in categories %}
+    <a href="{% url "blog_post_list_category" category.slug %}">{{ category }}</a>{% if not forloop.last %}, {% endif %}
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+	{% blocktrans with sometime=blog_post.publish_date|timesince %}{{ sometime }} ago{% endblocktrans %}
+        </td>
+          </tr>
+       </table>
+       {% endeditable %}
+{% endblock %}
+<div class="line"></div>
+
+{% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
+{% block blog_post_list_post_featured_image %}
+<div class="bookPic"><a href="{{ blog_post.get_absolute_url }}">
+        <img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 180 180 %}" /></a></div>
+{% endblock %}
+{% endif %}
+
+{% block blog_post_list_post_content %}
+<div class="bookDec">
+{% editable blog_post.content %}
+{{ blog_post.description_from_content|safe }}
+{% endeditable %}
+</div>
+{% endblock %}
+
+{% block blog_post_list_post_links %}
+       <div  class="detail">
+    {% keywords_for blog_post as tags %}
+    {% if tags %}
+    {% trans "Tags" %}:
+    {% spaceless %}
+    {% for tag in tags %}
+    <a href="{% url "blog_post_list_tag" tag.slug %}" class="tag">{{ tag }}</a>
+    {% endfor %}
+    {% endspaceless %}
+    <br>
+    {% endif %}
+    <img src='{% static "images/3.gif" %}' /><span>
+		
+	<a href="{{ blog_post.get_absolute_url }}#comments">
+		<span class="ds-thread-count" data-thread-key="{% duoshuo_id_for blog_post %}" data-count-type="comments"></span>
+    </a>
+
+		 <span class="see"><a href="{{ blog_post.get_absolute_url }}">查看详情>> </a></span>
+    
+    </div>
+</div>
+</div>
+
+{% endblock %}
+{% endfor %}
+
+{% pagination_for blog_posts %}
+
+{% if settings.COMMENTS_DISQUS_SHORTNAME %}
+{% include "generic/includes/disqus_counts.html" %}
+{% endif %}
+<script type="text/javascript">
+var duoshuoQuery = {short_name:"{% duoshuo_shortname %}"};
+(function() {
+    var ds = document.createElement('script');
+    ds.type = 'text/javascript';ds.async = true;
+    ds.src = 'http://static.duoshuo.com/embed.js';
+    ds.charset = 'UTF-8';
+    (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(ds);
+})();
+</script>
+
+
+{% endblock %}
+
+{% block right_panel %}
+{% include "blog/includes/filter_panel.html" %}
+{% endblock %}

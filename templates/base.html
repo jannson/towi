@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_BIDI %} dir="rtl"{% endif %}>
+{% load pages_tags mezzanine_tags i18n future staticfiles %}
+<head>
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta property="wb:webmaster" content="04475b70d930f159" />
+<meta name="viewport" content="width=device-width">
+<meta name="keywords" content="{% block meta_keywords %}{% endblock %}">
+<meta name="description" content="{% block meta_description %}{% endblock %}">
+<title>{% block meta_title %}{% endblock %}{% if settings.SITE_TITLE %} | {{ settings.SITE_TITLE }}{% endif %}</title>
+<link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
+
+{% ifinstalled mezzanine.blog %}
+<link rel="alternate" type="application/rss+xml" title="RSS" href="{% url "blog_post_feed" "rss" %}">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="{% url "blog_post_feed" "atom" %}">
+{% endifinstalled %}
+
+{% compress css %}
+<link rel="stylesheet" type="text/css" href='{% static "css/layout.css" %}'>
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" href="{% static "css/rtl.css" %}">
+{% endif %}
+{% ifinstalled cartridge.shop %}
+<link rel="stylesheet" href="{% static "css/cartridge.css" %}">
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" href="{% static "css/cartridge.rtl.css" %}">
+{% endif %}
+{% endifinstalled %}
+<link href='{% static "mezzanine_pagedown/css/pagedown.css" %}' type="text/css" media="all" rel="stylesheet" />
+<link href='{% static "mezzanine/css/smoothness/jquery-ui-1.9.1.custom.min.css" %}' type="text/css" media="all" rel="stylesheet" />
+{% block extra_css %}{% endblock %}
+{% endcompress %}
+
+{% compress js %}
+<script src="{% static "mezzanine/js/"|add:settings.JQUERY_FILENAME %}"></script>
+<script type="text/javascript" src="/static/filebrowser/js/AddFileBrowser.js"></script>
+<script type="text/javascript" src='{% static "mezzanine/js/jquery-ui-1.9.1.custom.min.js" %}'></script>
+<script type="text/javascript" src='{% static "mezzanine_pagedown/pagedown/Markdown.Converter.js" %}'></script>
+<script type="text/javascript" src='{% static "mezzanine_pagedown/pagedown/Markdown.Sanitizer.js" %}'></script>
+<script type="text/javascript" src='{% static "mezzanine_pagedown/pagedown/Markdown.Editor.js" %}'></script>
+<script type="text/javascript" src="/static/filebrowser/js/filebrowser-popup.js"></script>
+<script type="text/javascript" src="/static/mezzanine_pagedown/js/jquery.ba-throttle-debounce.min.js"></script>
+{% block extra_js %}{% endblock %}
+{% endcompress %}
+<!--[if lt IE 9]>
+<script src="{% static "js/html5shiv.js" %}"></script>
+<![endif]-->
+{% block extra_head %}{% endblock %}
+
+</head>
+<body id="{% block body_id %}body{% endblock %}">
+
+<div id="container">
+<div id="header">
+    <div id="nav">
+        {% page_menu "pages/menus/toway.html" %}
+    </div>
+</div>
+
+<div id="maincontent">
+    <div id="main">
+    {% block main %}{% endblock %}
+    </div>
+
+    <!--begin side-->
+    <div id="side">
+        {% nevercache %}
+        {% include "includes/user_panel.html" %}
+        {% endnevercache %}
+        <div class="panel">
+        {% search_form "all" %}
+        {% block right_panel %}
+        {% ifinstalled mezzanine.twitter %}
+        {% include "twitter/tweets.html" %}
+        {% endifinstalled %}
+        {% endblock %}
+        </div>
+    </div>
+</div>
+
+<div id="footer">
+{% page_menu "pages/menus/footer.html" %}
+<p>
+    {% trans "Powered by" %}
+    <a href="http://mezzanine.jupo.org">Mezzanine</a>{% ifinstalled cartridge.shop %},
+    <a href="http://cartridge.jupo.org">Cartridge</a>{% endifinstalled %}
+    {% trans "and" %}
+    <a href="http://www.djangoproject.com">Django</a>
+    <span class="separator">|</span>
+    {% trans "Theme by" %} <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>
+    {% ifinstalled mezzanine.mobile %}
+    <span class="separator">|</span>
+    <a href="{% url "set_device" "mobile" %}?next={{ request.path }}">{% trans "View Mobile Site" %}</a>
+    {% endifinstalled %}
+</p>
+</div>
+
+{% include "includes/footer_scripts.html" %}
+</div>
+
+</body>
+</html>

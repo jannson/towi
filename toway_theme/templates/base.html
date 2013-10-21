@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="{{ LANGUAGE_CODE }}"{% if LANGUAGE_BIDI %} dir="rtl"{% endif %}>
+{% load pages_tags mezzanine_tags i18n future staticfiles %}
+<head>
+
+<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+<meta property="wb:webmaster" content="04475b70d930f159" />
+<meta name="viewport" content="width=device-width">
+<meta name="keywords" content="{% block meta_keywords %}{% endblock %}">
+<meta name="description" content="{% block meta_description %}{% endblock %}">
+<title>{% block meta_title %}{% endblock %}{% if settings.SITE_TITLE %} | {{ settings.SITE_TITLE }}{% endif %}</title>
+<link rel="shortcut icon" href="{% static "img/favicon.ico" %}">
+
+{% ifinstalled mezzanine.blog %}
+<link rel="alternate" type="application/rss+xml" title="RSS" href="{% url "blog_post_feed" "rss" %}">
+<link rel="alternate" type="application/atom+xml" title="Atom" href="{% url "blog_post_feed" "atom" %}">
+{% endifinstalled %}
+
+{% compress css %}
+<link rel="stylesheet" type="text/css" href='{% static "css/layout.css" %}'>
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" href="{% static "css/rtl.css" %}">
+{% endif %}
+{% ifinstalled cartridge.shop %}
+<link rel="stylesheet" href="{% static "css/cartridge.css" %}">
+{% if LANGUAGE_BIDI %}
+<link rel="stylesheet" href="{% static "css/cartridge.rtl.css" %}">
+{% endif %}
+{% endifinstalled %}
+{% block extra_css %}{% endblock %}
+{% endcompress %}
+
+{% compress js %}
+<script src="{% static "mezzanine/js/"|add:settings.JQUERY_FILENAME %}"></script>
+{% block extra_js %}{% endblock %}
+{% endcompress %}
+<!--[if lt IE 9]>
+<script src="{% static "js/html5shiv.js" %}"></script>
+<![endif]-->
+<script type="text/javascript" src='{% static "js/toway.js" %}'></script>
+<script type="text/javascript">
+  $(function(){
+      $(window).scroll(function(){
+	
+    var scrollt = document.documentElement.scrollTop + document.body.scrollTop;
+    if(scrollt >20){ 
+	  $("#nav_top").fadeIn(400); 
+	 }else{
+	   $("#nav_top").stop().fadeOut(400);
+	  }
+   });
+   $("#nav_top").click(function(){
+    $("html,body").animate({scrollTop:"0px"},500);
+   });
+  
+  
+  });
+</script>
+
+{% block extra_head %}{% endblock %}
+
+</head>
+<body id="{% block body_id %}body{% endblock %}">
+
+<div id="container">
+<div id="header">
+  <table width="100%" border="0">
+  <tr>
+      <td style="padding-left:20px;"><img src='{% static "images/9.gif" %}' /></td>
+      <td align="right"><img src='{% static "images/headdong.gif" %}'/></td>
+  </tr>
+</table>
+</div>
+
+<div id="nav">
+    {% page_menu "pages/menus/toway.html" %}
+</div>
+
+<div>
+<ul class="breadcrumb">
+{% spaceless %}
+{% block breadcrumb_menu %}{% page_menu "pages/menus/breadcrumb.html" %}{% endblock %}
+{% endspaceless %}
+</ul>
+</div>
+
+<div id="maincontent">
+    <div id="main">
+    {% block main %}{% endblock %}
+    </div>
+
+    <!--begin side-->
+    <div id="side">
+        {% nevercache %}
+        {% include "includes/user_panel.html" %}
+        {% endnevercache %}
+        <div class="panel">
+        {% block right_panel %}
+        {% ifinstalled mezzanine.twitter %}
+        {% include "twitter/tweets.html" %}
+        {% endifinstalled %}
+        {% endblock %}
+        </div>
+    </div>
+</div>
+
+<div id="footer">
+{% page_menu "pages/menus/footer.html" %}
+<p>
+    {% trans "Powered by" %}
+    <a href="http://mezzanine.jupo.org">Mezzanine</a>{% ifinstalled cartridge.shop %},
+    <a href="http://cartridge.jupo.org">Cartridge</a>{% endifinstalled %}
+    {% trans "and" %}
+    <a href="http://www.djangoproject.com">Django</a>
+    <span class="separator">|</span>
+    {% trans "Theme by" %} <a href="http://twitter.github.com/bootstrap/">Bootstrap</a>
+    {% ifinstalled mezzanine.mobile %}
+    <span class="separator">|</span>
+    <a href="{% url "set_device" "mobile" %}?next={{ request.path }}">{% trans "View Mobile Site" %}</a>
+    {% endifinstalled %}
+</p>
+</div>
+<!--回顶部图标-->
+<a id="nav_top" style=" display:none;position:fixed; _ position:absolute;_bottom:expression(eval(document.documentElement.scrollTop));left:1220px; _ left:1220px; bottom:20px;"><img src='{% static "images/back.gif" %}'/></a>
+
+{% include "includes/footer_scripts.html" %}
+
+</body>
+</html>

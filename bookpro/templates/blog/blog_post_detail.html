@@ -1,0 +1,101 @@
+{% extends "blog/blog_post_list.html" %}
+{% load mezzanine_tags comment_tags keyword_tags rating_tags i18n future disqus_tags %}
+
+{% block meta_title %}{{ blog_post.meta_title }}{% endblock %}
+
+{% block meta_keywords %}{% metablock %}
+{% keywords_for blog_post as tags %}
+{% for tag in tags %}{% if not forloop.first %}, {% endif %}{{ tag }}{% endfor %}
+{% endmetablock %}{% endblock %}
+
+{% block meta_description %}{% metablock %}
+{{ blog_post.description }}
+{% endmetablock %}{% endblock %}
+
+{% block main %}
+
+{% block blog_post_list_post_title %}
+{% editable blog_post.title %}
+<h1><a id="mainTitle" href='{{ blog_post.get_absolute_url }}'>{{ blog_post.title }}<a/></h1>
+{% endeditable %}
+{% endblock %}
+{% block blog_post_detail_postedby %}
+{% editable blog_post.publish_date %}
+    {% with blog_post.user as author %}
+    <a href="{% url "blog_post_list_author" author %}">{{ author.get_full_name|default:author.username }}</a>&nbsp;&nbsp;
+    {% endwith %}
+	<span>{% blocktrans with sometime=blog_post.publish_date|timesince %}{{ sometime }} ago{% endblocktrans %}</span>
+{% endeditable %}
+{% endblock %}
+
+<div class="contentPic">
+{% block blog_post_detail_featured_image %}
+{% if settings.BLOG_USE_FEATURED_IMAGE and blog_post.featured_image %}
+<img src="{{ MEDIA_URL }}{% thumbnail blog_post.featured_image 600 0 %}"/>
+{% endif %}
+{% endblock %}
+</div>
+
+{% if settings.COMMENTS_DISQUS_SHORTNAME %}
+{% include "generic/includes/disqus_counts.html" %}
+{% endif %}
+
+{% block blog_post_detail_content %}
+{% editable blog_post.content %}
+<div class="newsContent" id="divCocntent">
+	{{ blog_post.content|richtext_filters|safe }}
+</div>
+{% endeditable %}
+{% endblock %}
+
+{% block blog_post_detail_keywords %}
+{% keywords_for blog_post as tags %}
+{% if tags %}
+{% spaceless %}
+<ul class="unstyled tags">
+    <li>{% trans "Tags" %}:</li>
+    {% for tag in tags %}
+    <li><a href="{% url "blog_post_list_tag" tag.slug %}">{{ tag }}</a></li>
+    {% endfor %}
+</ul>
+{% endspaceless %}
+{% endif %}
+{% endblock %}
+
+{% block blog_post_previous_next %}
+<ul class="pager">
+{% with blog_post.get_previous_by_publish_date as previous %}
+{% if previous %}
+<li class="previous">
+    <a href="{{ previous.get_absolute_url }}">&larr; {{ previous }}</a>
+</li>
+{% endif %}
+{% endwith %}
+{% with blog_post.get_next_by_publish_date as next %}
+{% if next %}
+<li class="next">
+    <a href="{{ next.get_absolute_url }}">{{ next }} &rarr;</a>
+</li>
+{% endif %}
+{% endwith %}
+</ul>
+{% endblock %}
+
+{% block blog_post_detail_related_posts %}
+{% if blog_post.related_posts.all %}
+<div id="related-posts">
+<h3>{% trans 'Related posts' %}</h3>
+<ul class="unstyled">
+{% for post in blog_post.related_posts.all %}
+     <li><a href="{{ post.get_absolute_url }}">{{ post.title }}</a></li>
+{% endfor %}
+</ul>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block blog_post_detail_comments %}
+{% if blog_post.allow_comments %}{% comments_for blog_post %}{% endif %}
+{% endblock %}
+
+{% endblock %}
