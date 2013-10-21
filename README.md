@@ -36,6 +36,8 @@ TODO
 
 * 微信接口，分享至xxx
 
+* 首页微信与微博直接关注
+
 * 完善登录：
   * 微博登录： http://towi.sinaapp.com/login/weibo
   * 豆瓣登录： http://towi.sinaapp.com/login/douban2
